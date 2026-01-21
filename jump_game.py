@@ -1,7 +1,7 @@
 import arcade
 from pyglet.graphics import Batch
 
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED
 from player import Player
 
 
@@ -42,6 +42,13 @@ class JumpGame(arcade.View):
         self.batch.draw()
 
     def on_update(self, delta_time):
+        move = 0
+        if self.left and not self.right:
+            move = -MOVE_SPEED
+        elif self.right and not self.left:
+            move = MOVE_SPEED
+        self.player.change_x = move
+
         self.player_list.update()
 
         self.engine.update()

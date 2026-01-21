@@ -21,5 +21,10 @@ class Player(arcade.Sprite):
         elif self.left >= SCREEN_WIDTH:
             self.right = 0
 
+        if self.change_x > 0:
+            self.scale_x = 1
+        elif self.change_x < 0:
+            self.scale_x = -1
+
         if self.top > SCREEN_HEIGHT:
             self.top = SCREEN_HEIGHT

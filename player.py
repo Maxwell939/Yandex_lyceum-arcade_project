@@ -1,6 +1,6 @@
 import arcade
 
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCROLL_THRESHOLD
 
 
 class Player(arcade.Sprite):
@@ -14,6 +14,8 @@ class Player(arcade.Sprite):
         self.center_x = x
         self.bottom = y
 
+        self.scroll = 0
+
     def update(self, delta_time):
         super().update(delta_time)
         if self.right <= 0:
@@ -26,5 +28,8 @@ class Player(arcade.Sprite):
         elif self.change_x < 0:
             self.scale_x = -1
 
-        if self.top > SCREEN_HEIGHT:
-            self.top = SCREEN_HEIGHT
+        if self.change_y != 0:
+            self.scroll = 0
+        if self.top >= SCROLL_THRESHOLD:
+            if self.change_y > 0:
+                self.scroll = -self.change_y

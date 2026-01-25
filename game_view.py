@@ -7,7 +7,7 @@ from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED, MAX_PLAT
 from physics_engine import OneWayPlatformPhysicsEngine
 from platform_ import Platform
 from player import Player
-
+from score_manager import ScoreManager
 
 class GameView(arcade.View):
     def __init__(self):
@@ -27,7 +27,11 @@ class GameView(arcade.View):
         self.background_scroll = 0
 
         self.score = 0
+        self.score_manager = ScoreManager()
         self.batch = Batch()
+        self.score_text = None
+        self.high_score_text = None
+        self.total_scroll = 0
         ... #text
 
     def setup(self):
@@ -45,6 +49,9 @@ class GameView(arcade.View):
             platforms=self.platforms
         )
         self.engine.disable_multi_jump()
+        self.score_manager.reset()
+        self.total_scroll = 0
+        self.create_score_display()
 
     def on_draw(self):
         self.clear()
@@ -69,13 +76,19 @@ class GameView(arcade.View):
 
         self.player_list.update()
 
-        self.background_scroll += self.player.scroll // 2
-        if self.background_scroll <= -SCREEN_HEIGHT:
-            self.background_scroll = 0
-
         if self.player.scroll != 0:
             for platform in self.platforms:
                 platform.center_y += self.player.scroll
+
+        self.total_scroll -= self.player.scroll
+
+        new_score = int(self.total_scroll // 10)
+        self.score_manager.update_score(new_score)
+        self.update_score_display()
+
+        self.background_scroll += self.player.scroll // 2
+        if self.background_scroll <= -SCREEN_HEIGHT:
+            self.background_scroll = 0
 
         if len(self.platforms) < MAX_PLATFORMS:
             platform_x = random.randint(0, int(SCREEN_WIDTH - self.platform.width))
@@ -110,3 +123,21 @@ class GameView(arcade.View):
             self.up = False
         elif key in (arcade.key.DOWN, arcade.key.S):
             self.down = False
+    
+    def create_score_display(self):
+        self.score_text = arcade.Text(
+            f"Счёт: {self.score_manager.current_score}",
+            10, SCREEN_HEIGHT - 30,
+            arcade.color.WHITE, 20,
+            batch=self.batch)
+        self.high_score_text = arcade.Text(
+            f"Рекорд: {self.score_manager.high_score}",
+            SCREEN_WIDTH - 150, SCREEN_HEIGHT - 30,
+            arcade.color.GOLD, 20,
+            batch=self.batch,
+            align="right",
+            width=140)
+
+    def update_score_display(self):
+        self.score_text.text = f"Счёт: {self.score_manager.current_score}"
+        self.high_score_text.text = f"Рекорд: {self.score_manager.high_score}"

@@ -28,10 +28,8 @@ class Player(arcade.Sprite):
         elif self.change_x < 0:
             self.scale_x = -1
 
-        if self.change_y != 0:
-            self.scroll = 0
+        self.scroll = 0
         if self.top >= SCROLL_THRESHOLD:
-            if self.change_y > 0:
-                self.scroll = -self.change_y
-
-        self.center_y += self.scroll
+            above_threshold = self.top - SCROLL_THRESHOLD
+            self.top = SCROLL_THRESHOLD
+            self.scroll = -above_threshold

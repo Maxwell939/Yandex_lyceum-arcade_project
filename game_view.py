@@ -4,6 +4,7 @@ import arcade
 from pyglet.graphics import Batch
 
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED, MAX_PLATFORMS, JUMP_SPEED
+from physics_engine import OneWayPlatformPhysicsEngine
 from platform_ import Platform
 from player import Player
 
@@ -38,7 +39,7 @@ class GameView(arcade.View):
         self.platform.position = [SCREEN_WIDTH // 2, 50]
         self.platforms.append(self.platform)
 
-        self.engine = arcade.PhysicsEnginePlatformer(
+        self.engine = OneWayPlatformPhysicsEngine(
             player_sprite=self.player,
             gravity_constant=GRAVITY,
             platforms=self.platforms
@@ -72,6 +73,10 @@ class GameView(arcade.View):
         if self.background_scroll <= -SCREEN_HEIGHT:
             self.background_scroll = 0
 
+        if self.player.scroll != 0:
+            for platform in self.platforms:
+                platform.center_y += self.player.scroll
+
         if len(self.platforms) < MAX_PLATFORMS:
             platform_x = random.randint(0, int(SCREEN_WIDTH - self.platform.width))
             platform_y = self.platforms[-1].top + self.platform.height + random.randint(80, 120)
@@ -79,7 +84,7 @@ class GameView(arcade.View):
             platform.left, platform.bottom = platform_x, platform_y
             self.platforms.append(platform)
 
-        self.platforms.update(scroll=self.player.scroll)
+        self.platforms.update()
 
         if self.engine.can_jump(y_distance=6):
             self.engine.jump(JUMP_SPEED)

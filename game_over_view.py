@@ -1,12 +1,12 @@
 import arcade
 from pyglet.graphics import Batch
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT
-from score_manager import ScoreManager
 
 class GameOverView(arcade.View):
-    def __init__(self, score_manager):
+    def __init__(self, score_manager, sound_manager):
         super().__init__()
         self.score_manager = score_manager
+        self.sound_manager = sound_manager
         self.batch = Batch()
         self.game_over_text = None
         self.score_text = None

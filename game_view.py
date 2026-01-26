@@ -9,6 +9,7 @@ from platform_ import Platform
 from player import Player
 from score_manager import ScoreManager
 from game_over_view import GameOverView
+from sound_manager import SoundManager
 
 class GameView(arcade.View):
     def __init__(self):
@@ -29,6 +30,7 @@ class GameView(arcade.View):
         self.was_jumping = False
 
         self.score_manager = ScoreManager()
+        self.sound_manager = SoundManager()
         self.batch = Batch()
         self.score_text = None
         self.high_score_text = None
@@ -102,14 +104,17 @@ class GameView(arcade.View):
 
         if self.engine.can_jump(y_distance=6):
             self.engine.jump(JUMP_SPEED)
-            self.was_jumping = True
+            if not self.was_jumping:
+                self.sound_manager.play_jump()
+                self.was_jumping = True
         else:
             self.was_jumping = False
 
         self.engine.update()
 
         if self.check_death():
-            game_over_view = GameOverView(self.score_manager)
+            self.sound_manager.play_death()
+            game_over_view = GameOverView(self.score_manager, self.sound_manager)
             self.window.show_view(game_over_view)
 
     def check_death(self):

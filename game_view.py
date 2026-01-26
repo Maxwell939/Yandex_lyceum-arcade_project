@@ -8,6 +8,7 @@ from physics_engine import OneWayPlatformPhysicsEngine
 from platform_ import Platform
 from player import Player
 from score_manager import ScoreManager
+from game_over_view import GameOverView
 
 class GameView(arcade.View):
     def __init__(self):
@@ -25,8 +26,8 @@ class GameView(arcade.View):
 
         self.left, self.right, self.up, self.down = False, False, False, False
         self.background_scroll = 0
+        self.was_jumping = False
 
-        self.score = 0
         self.score_manager = ScoreManager()
         self.batch = Batch()
         self.score_text = None
@@ -51,6 +52,7 @@ class GameView(arcade.View):
         self.engine.disable_multi_jump()
         self.score_manager.reset()
         self.total_scroll = 0
+        self.was_jumping = False
         self.create_score_display()
 
     def on_draw(self):
@@ -89,10 +91,6 @@ class GameView(arcade.View):
         self.score_manager.update_score(new_score)
         self.update_score_display()
 
-        self.background_scroll += self.player.scroll // 2
-        if self.background_scroll <= -SCREEN_HEIGHT:
-            self.background_scroll = 0
-
         if len(self.platforms) < MAX_PLATFORMS:
             platform_x = random.randint(0, int(SCREEN_WIDTH - self.platform.width))
             platform_y = self.platforms[-1].top + self.platform.height + random.randint(80, 120)
@@ -102,7 +100,22 @@ class GameView(arcade.View):
 
         self.platforms.update()
 
+        if self.engine.can_jump(y_distance=6):
+            self.engine.jump(JUMP_SPEED)
+            self.was_jumping = True
+        else:
+            self.was_jumping = False
+
         self.engine.update()
+
+        if self.check_death():
+            game_over_view = GameOverView(self.score_manager)
+            self.window.show_view(game_over_view)
+
+    def check_death(self):
+        if self.player.top < 0:
+            return True
+        return False
 
     def on_key_press(self, key, modifiers):
         if key in (arcade.key.LEFT, arcade.key.A):

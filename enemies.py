@@ -6,11 +6,11 @@ from constants import RIGHT_FACING, LEFT_FACING, SCREEN_WIDTH, ENEMY_BIRD_SPEED
 
 
 class Enemy(arcade.Sprite):
-    def __init__(self, y):
+    def __init__(self, y: int):
         super().__init__()
         self.bottom = y
 
-    def update(self, delta_time, player) -> None:
+    def update(self, player: arcade.Sprite, delta_time: float = 1 / 60) -> None:
         super().update(delta_time)
         if self.collides_with_sprite(player):
             self.kill()
@@ -20,7 +20,7 @@ class Enemy(arcade.Sprite):
 
 
 class EnemyBat(Enemy):
-    def __init__(self, y):
+    def __init__(self, y: int):
         super().__init__(y)
         for i in range(1, 8):
             self.textures.append(arcade.load_texture(f"textures/bat/bat{i}.png"))
@@ -33,7 +33,7 @@ class EnemyBat(Enemy):
 
         self.left = random.randint(SCREEN_WIDTH // 10, SCREEN_WIDTH - int(self.width) - SCREEN_WIDTH // 10)
 
-    def update_animation(self, delta_time: float = 1 / 60):
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.texture_change_time += delta_time
         if self.texture_change_time >= self.texture_change_delay:
             self.texture_change_time -= self.texture_change_delay
@@ -42,7 +42,7 @@ class EnemyBat(Enemy):
 
 
 class EnemyBird(Enemy):
-    def __init__(self, y):
+    def __init__(self, y: int):
         super().__init__(y)
         for i in range(1, 10):
             self.textures.append(arcade.load_texture(f"textures/bird/bird{i}.png"))
@@ -61,13 +61,13 @@ class EnemyBird(Enemy):
         self.scale_x = direction * -1
         self.change_x = direction * ENEMY_BIRD_SPEED
 
-    def update(self, delta_time, player) -> None:
-        super().update(delta_time, player)
+    def update(self, player: arcade.Sprite, delta_time: float = 1 / 60) -> None:
+        super().update(player=player, delta_time=delta_time)
         if self.left == 0 or self.right == SCREEN_WIDTH:
             self.scale_x *= -1
             self.change_x *= -1
 
-    def update_animation(self, delta_time: float = 1 / 60):
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.texture_change_time += delta_time
         if self.texture_change_time >= self.texture_change_delay:
             self.texture_change_time -= self.texture_change_delay

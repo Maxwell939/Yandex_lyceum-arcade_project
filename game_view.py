@@ -96,7 +96,7 @@ class GameView(arcade.View):
         for enemy in self.enemies:
             enemy.change_y = self.player.scroll
 
-        self.enemies.update(player=self.player)
+        self.enemies.update(self.player)
 
         self.enemies.update_animation()
 

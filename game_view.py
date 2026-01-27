@@ -4,6 +4,7 @@ import arcade
 from pyglet.graphics import Batch
 
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED, MAX_PLATFORMS, JUMP_SPEED
+from enemies import EnemyBird
 from physics_engine import OneWayPlatformPhysicsEngine
 from platform_ import Platform
 from player import Player
@@ -17,6 +18,7 @@ class GameView(arcade.View):
         self.player_list = arcade.SpriteList()
         self.platforms = arcade.SpriteList()
         self.platform = None
+        self.enemies = arcade.SpriteList()
 
         self.player = None
         self.spawn_point = (SCREEN_WIDTH // 2, 60)
@@ -54,8 +56,9 @@ class GameView(arcade.View):
                                  arcade.rect.LBWH(0, SCREEN_HEIGHT + self.background_scroll,
                                                   SCREEN_WIDTH, SCREEN_HEIGHT))
 
-        self.player_list.draw()
         self.platforms.draw()
+        self.enemies.draw()
+        self.player_list.draw()
 
         self.batch.draw()
 
@@ -85,6 +88,15 @@ class GameView(arcade.View):
             self.platforms.append(platform)
 
         self.platforms.update()
+
+        if len(self.enemies) == 0:
+            enemy = EnemyBird(SCREEN_HEIGHT // 2)
+            self.enemies.append(enemy)
+
+        for enemy in self.enemies:
+            enemy.change_y = self.player.scroll
+
+        self.enemies.update(player=self.player)
 
         if self.engine.can_jump(y_distance=6):
             self.engine.jump(JUMP_SPEED)

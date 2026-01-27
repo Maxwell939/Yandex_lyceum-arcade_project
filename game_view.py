@@ -56,9 +56,9 @@ class GameView(arcade.View):
                                  arcade.rect.LBWH(0, SCREEN_HEIGHT + self.background_scroll,
                                                   SCREEN_WIDTH, SCREEN_HEIGHT))
 
-        self.platforms.draw()
-        self.enemies.draw()
-        self.player_list.draw()
+        self.platforms.draw(pixelated=True)
+        self.enemies.draw(pixelated=True)
+        self.player_list.draw(pixelated=True)
 
         self.batch.draw()
 
@@ -90,15 +90,15 @@ class GameView(arcade.View):
         self.platforms.update()
 
         if len(self.enemies) == 0:
-            self.enemies.append(EnemyBird(SCREEN_HEIGHT * 3 + random.choice((-1, 1)) * random.randint(50, 200)))
-            self.enemies.append(EnemyBat(SCREEN_HEIGHT * 2+ random.choice((-1, 1)) * random.randint(50, 200)))
+            self.enemies.append(EnemyBird(SCREEN_HEIGHT * 2 + random.choice((-1, 1)) * random.randint(50, 200)))
+            self.enemies.append(EnemyBat(SCREEN_HEIGHT * 2 + random.choice((-1, 1)) * random.randint(50, 200)))
 
         for enemy in self.enemies:
             enemy.change_y = self.player.scroll
 
         self.enemies.update(self.player)
 
-        self.enemies.update_animation()
+        self.enemies.update_animation(delta_time)
 
         if self.engine.can_jump(y_distance=6):
             self.engine.jump(JUMP_SPEED)

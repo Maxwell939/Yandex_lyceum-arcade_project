@@ -14,6 +14,9 @@ class Enemy(arcade.Sprite):
         super().update(delta_time)
         if self.collides_with_sprite(player):
             self.kill()
+            ... # another way for game_over
+        if self.top < 0:
+            self.kill()
 
 
 class EnemyBird(Enemy):

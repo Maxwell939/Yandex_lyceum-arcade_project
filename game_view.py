@@ -90,7 +90,7 @@ class GameView(arcade.View):
         self.platforms.update()
 
         if len(self.enemies) == 0:
-            enemy = EnemyBird(SCREEN_HEIGHT // 2)
+            enemy = EnemyBird(SCREEN_HEIGHT)
             self.enemies.append(enemy)
 
         for enemy in self.enemies:

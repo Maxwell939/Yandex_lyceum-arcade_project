@@ -146,15 +146,9 @@ class GameView(arcade.View):
 
         self.engine.update()
 
-        if self.check_death():
-            self.sound_manager.play_death()
+        if self.player.is_dead:
             game_over_view = GameOverView(self.score_manager, self.sound_manager)
             self.window.show_view(game_over_view)
-
-    def check_death(self):
-        if self.player.top < 0:
-            return True
-        return False
 
     def on_key_press(self, key, modifiers):
         if key in (arcade.key.LEFT, arcade.key.A):

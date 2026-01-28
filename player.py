@@ -1,6 +1,7 @@
 import arcade
 
 from constants import SCREEN_WIDTH, SCROLL_THRESHOLD, PLAYER_SCALE
+from sound_manager import SoundManager
 
 
 class Player(arcade.Sprite):
@@ -14,11 +15,17 @@ class Player(arcade.Sprite):
         self.center_x = x
         self.bottom = y
         self.scale = PLAYER_SCALE
+        self.is_dead = False
 
         self.scroll = 0
 
     def update(self, delta_time: float = 1 / 60) -> None:
         super().update(delta_time)
+        if self.top < 0:
+            self.is_dead = True
+            sound_manager = SoundManager()
+            sound_manager.play_death()
+
         if self.right <= 0:
             self.left = SCREEN_WIDTH
         elif self.left >= SCREEN_WIDTH:

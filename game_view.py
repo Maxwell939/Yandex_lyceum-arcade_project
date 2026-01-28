@@ -4,10 +4,11 @@ import arcade
 from pyglet.graphics import Batch
 
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED, MAX_PLATFORMS, JUMP_SPEED, \
-    MIN_DELTA_PLATFORMS_DISTANCE, ENEMIES_SPAWN_SCORE_THRESHOLD
+    MAX_DELTA_PLATFORMS_DISTANCE, ENEMIES_SPAWN_SCORE_THRESHOLD, MOVING_PLATFORMS_SCORE_THRESHOLD
+
 from enemies import EnemyBird, EnemyBat
 from physics_engine import OneWayPlatformPhysicsEngine
-from platforms import Platform
+from platforms import Platform, MovingPlatform
 from player import Player
 from score_manager import ScoreManager
 from game_over_view import GameOverView
@@ -23,6 +24,8 @@ class GameView(arcade.View):
         self.platforms = arcade.SpriteList()
         self.platform = None
         self.delta_platforms_distance = 0
+        self.moving_platforms_amount = 0
+
         self.enemies = arcade.SpriteList()
 
         self.player = None
@@ -97,15 +100,30 @@ class GameView(arcade.View):
         self.score_manager.update_score(new_score)
         self.update_score_display()
 
-        if self.delta_platforms_distance <= MIN_DELTA_PLATFORMS_DISTANCE:
+        if self.delta_platforms_distance <= MAX_DELTA_PLATFORMS_DISTANCE:
             self.delta_platforms_distance = int(self.score // 200)
-        if len(self.platforms) < MAX_PLATFORMS:
-            platform_x = random.randint(0, int(SCREEN_WIDTH - self.platform.width))
-            platform_y = (self.platforms[-1].top + self.platform.height +
-                          random.randint(10 + self.delta_platforms_distance, 50 + self.delta_platforms_distance))
-            platform = Platform()
-            platform.left, platform.bottom = platform_x, platform_y
-            self.platforms.append(platform)
+
+        if len(self.platforms) <= MAX_PLATFORMS:
+            platform_types = (["moving"] * self.moving_platforms_amount +
+                              ["idle"] * (MAX_PLATFORMS - self.moving_platforms_amount))
+
+            random.shuffle(platform_types)
+
+            for platform_type in platform_types:
+                platform_y = (self.platforms[-1].top + self.platform.height +
+                              random.randint(10 + self.delta_platforms_distance, 50 + self.delta_platforms_distance))
+                if platform_type == 'moving':
+                    platform = MovingPlatform(platform_y)
+                else:
+                    platform = Platform()
+                    platform_x = random.randint(0, int(SCREEN_WIDTH - self.platform.width))
+                    platform.left, platform.bottom = platform_x, platform_y
+
+                self.platforms.append(platform)
+
+            if self.score > MOVING_PLATFORMS_SCORE_THRESHOLD:
+                self.moving_platforms_amount = int(self.score) // (SCREEN_HEIGHT * 2)
+            print(self.moving_platforms_amount)
 
         self.platforms.update()
 

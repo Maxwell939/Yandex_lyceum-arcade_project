@@ -2,7 +2,7 @@ import random
 
 import arcade
 
-from constants import LEFT_FACING, RIGHT_FACING, SCREEN_WIDTH
+from constants import LEFT_FACING, RIGHT_FACING, SCREEN_WIDTH, MOVING_PLATFORM_SPEED_RANGE
 
 
 class Platform(arcade.Sprite):
@@ -33,3 +33,5 @@ class MovingPlatform(Platform):
 
         self.boundary_left = 0
         self.boundary_right = SCREEN_WIDTH
+
+        self.change_x = random.uniform(*MOVING_PLATFORM_SPEED_RANGE)

@@ -8,9 +8,9 @@ class OneWayPlatformPhysicsEngine(arcade.PhysicsEnginePlatformer):
         super().__init__(player_sprite=player_sprite, gravity_constant=gravity_constant)
         self.oneway_platforms = platforms
 
-    def update(self):
+    def update(self) -> None:
         super().update()
-        player = self.player_sprite
+        player: arcade.Sprite = self.player_sprite
         for platform in self.oneway_platforms:
             if (platform.collides_with_sprite(player)
                     and player.center_y > platform.center_y

@@ -115,9 +115,7 @@ class GameView(arcade.View):
                 if platform_type == "moving":
                     platform = MovingPlatform(platform_y)
                 else:
-                    platform = Platform()
-                    platform_x = random.randint(0, int(SCREEN_WIDTH - self.platform.width))
-                    platform.left, platform.bottom = platform_x, platform_y
+                    platform = Platform(platform_y)
 
                 self.platforms.append(platform)
 

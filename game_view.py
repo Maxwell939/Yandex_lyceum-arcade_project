@@ -16,12 +16,12 @@ from game_over_view import GameOverView
 from sound_manager import SoundManager
 
 
-def gravity_drag(p):
+def gravity_drag(p) -> None:
     p.change_y -= 0.03
     p.change_x *= 0.92
     p.change_y *= 0.92
 
-def make_explosion(x, y, count=80):
+def make_explosion(x, y, count=80) -> Emitter:
     return Emitter(
         center_xy=(x, y),
         emit_controller=EmitBurst(count),
@@ -66,7 +66,7 @@ class GameView(arcade.View):
         self.high_score_text = None
         self.score = 0
 
-    def setup(self):
+    def setup(self) -> None:
         self.player = Player(*self.spawn_point)
         self.player_list.append(self.player)
 
@@ -87,7 +87,7 @@ class GameView(arcade.View):
         self.score = 0
         self.create_score_display()
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         self.clear()
         arcade.draw_texture_rect(self.background,
                                  arcade.rect.LBWH(0, self.background_scroll, SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -104,7 +104,7 @@ class GameView(arcade.View):
 
         self.batch.draw()
 
-    def on_update(self, delta_time):
+    def on_update(self, delta_time: float) -> None:
         move = 0
         if self.left and not self.right:
             move = -MOVE_SPEED
@@ -181,7 +181,7 @@ class GameView(arcade.View):
             game_over_view = GameOverView(self.score_manager, self.sound_manager)
             self.window.show_view(game_over_view)
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: int, modifiers: int) ->  None:
         if key in (arcade.key.LEFT, arcade.key.A):
             self.left = True
         elif key in (arcade.key.RIGHT, arcade.key.D):
@@ -191,7 +191,7 @@ class GameView(arcade.View):
         elif key in (arcade.key.DOWN, arcade.key.S):
             self.down = True
 
-    def on_key_release(self, key, modifiers):
+    def on_key_release(self, key: int, modifiers: int) -> None:
         if key in (arcade.key.LEFT, arcade.key.A):
             self.left = False
         elif key in (arcade.key.RIGHT, arcade.key.D):
@@ -201,7 +201,7 @@ class GameView(arcade.View):
         elif key in (arcade.key.DOWN, arcade.key.S):
             self.down = False
     
-    def create_score_display(self):
+    def create_score_display(self) -> None:
         self.score_text = arcade.Text(
             f"Счёт: {self.score_manager.current_score}",
             10, SCREEN_HEIGHT - 30,
@@ -215,6 +215,6 @@ class GameView(arcade.View):
             align="right",
             width=140)
 
-    def update_score_display(self):
+    def update_score_display(self) -> None:
         self.score_text.text = f"Счёт: {self.score_manager.current_score}"
         self.high_score_text.text = f"Рекорд: {self.score_manager.high_score}"

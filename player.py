@@ -19,7 +19,7 @@ class Player(arcade.Sprite):
 
         self.scroll = 0
 
-    def update(self, delta_time: float = 1 / 60):
+    def update(self, delta_time: float = 1 / 60) -> None:
         super().update(delta_time)
         if self.top < 0:
             self.is_dead = True

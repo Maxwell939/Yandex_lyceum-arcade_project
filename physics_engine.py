@@ -1,12 +1,14 @@
 import arcade
 from constants import JUMP_SPEED
+from sound_manager import SoundManager
+
 
 class OneWayPlatformPhysicsEngine(arcade.PhysicsEnginePlatformer):
     def __init__(self, player_sprite, gravity_constant, platforms):
         super().__init__(player_sprite=player_sprite, gravity_constant=gravity_constant)
         self.oneway_platforms = platforms
 
-    def update(self, sound_manager=None):
+    def update(self, sound_manager: SoundManager) -> None:
         super().update()
         player: arcade.Sprite = self.player_sprite
         for platform in self.oneway_platforms:

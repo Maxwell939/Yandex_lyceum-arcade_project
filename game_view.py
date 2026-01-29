@@ -63,7 +63,6 @@ class GameView(arcade.View):
         self.sound_manager = SoundManager()
         self.batch = Batch()
         self.score_text = None
-        self.high_score_text = None
         self.score = 0
 
     def setup(self) -> None:
@@ -102,6 +101,7 @@ class GameView(arcade.View):
         self.enemies.draw(pixelated=True)
         self.player_list.draw(pixelated=True)
 
+        arcade.draw_lrbt_rectangle_filled(0, SCREEN_WIDTH, SCREEN_HEIGHT - 35, SCREEN_HEIGHT, (0, 0, 0, 120))
         self.batch.draw()
 
     def on_update(self, delta_time: float) -> None:
@@ -201,20 +201,12 @@ class GameView(arcade.View):
         elif key in (arcade.key.DOWN, arcade.key.S):
             self.down = False
     
-    def create_score_display(self) -> None:
+    def create_score_display(self):
         self.score_text = arcade.Text(
-            f"Счёт: {self.score_manager.current_score}",
+            f"{self.score_manager.current_score}",
             10, SCREEN_HEIGHT - 30,
-            arcade.color.WHITE, 20,
+            arcade.color.BLACK, 15, font_name="Press Start 2P",
             batch=self.batch)
-        self.high_score_text = arcade.Text(
-            f"Рекорд: {self.score_manager.high_score}",
-            SCREEN_WIDTH - 150, SCREEN_HEIGHT - 30,
-            arcade.color.GOLD, 20,
-            batch=self.batch,
-            align="right",
-            width=140)
 
     def update_score_display(self) -> None:
-        self.score_text.text = f"Счёт: {self.score_manager.current_score}"
-        self.high_score_text.text = f"Рекорд: {self.score_manager.high_score}"
+        self.score_text.text = f"{self.score_manager.current_score}"

@@ -3,7 +3,12 @@ import arcade
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE
 from game_view import GameView
 from start_view import StartView
+import sys
+import os
 
+
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    os.chdir(sys._MEIPASS)
 
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)

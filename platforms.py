@@ -14,7 +14,7 @@ class Platform(arcade.Sprite):
         self.left = random.randint(0, int(SCREEN_WIDTH - self.width))
         self.bottom = y
 
-    def update(self, delta_time: float = 1 / 60) -> None:
+    def update(self, delta_time: float = 1 / 60):
         super().update(delta_time)
 
         if self.top < 0:

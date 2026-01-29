@@ -6,7 +6,7 @@ class OneWayPlatformPhysicsEngine(arcade.PhysicsEnginePlatformer):
         super().__init__(player_sprite=player_sprite, gravity_constant=gravity_constant)
         self.oneway_platforms = platforms
 
-    def update(self, sound_manager=None) -> None:
+    def update(self, sound_manager=None):
         super().update()
         player: arcade.Sprite = self.player_sprite
         for platform in self.oneway_platforms:

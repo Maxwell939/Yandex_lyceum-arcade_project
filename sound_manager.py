@@ -45,6 +45,7 @@ class SoundManager:
                                   and self.death_sound is not None
                                   and self.death_from_monster_sound is not None
                                   and self.monster_death_sound is not None)
+                
         except Exception as e:
             self.sounds_loaded = False
     

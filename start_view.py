@@ -1,8 +1,15 @@
+import os
+import sys
 import arcade
 from pyglet.graphics import Batch
-
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE
 
+def get_base_path():
+    if getattr(sys, 'frozen', False):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.abspath(__file__))
+
+BASE_PATH = get_base_path()
 
 class StartView(arcade.View):
     def __init__(self, game_view):
@@ -13,7 +20,8 @@ class StartView(arcade.View):
         self.any_key_text1 = None
         self.any_key_text2 = None
         self.batch = None
-        arcade.load_font("fonts/PressStart2P-Regular.ttf")
+        font_path = os.path.join(BASE_PATH, "fonts", "PressStart2P-Regular.ttf")
+        arcade.load_font(font_path)
 
     def on_draw(self) -> None:
         self.clear()

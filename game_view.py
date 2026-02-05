@@ -50,22 +50,29 @@ class GameView(arcade.View):
         background_path = os.path.join(BASE_PATH, "textures", "background.png")
         self.background = arcade.load_texture(background_path)
         self.player_list = arcade.SpriteList()
+
         self.platforms = arcade.SpriteList()
         self.platform = None
         self.delta_platforms_distance = 0
         self.moving_platforms_amount = 0
+
         self.enemies = arcade.SpriteList()
+
         self.player = None
         self.spawn_point = (SCREEN_WIDTH // 2, 60)
+
         self.engine = None
+
         self.left = False
         self.right = False
-        self.up = False
-        self.down = False
+
         self.background_scroll = 0
+
         self.emitters = None
+
         self.score_manager = ScoreManager()
         self.sound_manager = SoundManager()
+
         self.batch = Batch()
         self.score_text = None
         self.score = 0
@@ -73,16 +80,20 @@ class GameView(arcade.View):
     def setup(self):
         self.player = Player(*self.spawn_point)
         self.player_list.append(self.player)
+
         self.platform = Platform()
         self.platform.position = [SCREEN_WIDTH // 2, 50]
         self.platforms.append(self.platform)
+
         self.engine = OneWayPlatformPhysicsEngine(
             player_sprite=self.player,
             gravity_constant=GRAVITY,
             platforms=self.platforms
         )
         self.engine.disable_multi_jump()
+
         self.emitters = []
+
         self.score_manager.reset()
         self.score = 0
         self.create_score_display()
@@ -94,6 +105,7 @@ class GameView(arcade.View):
         arcade.draw_texture_rect(self.background,
                                  arcade.rect.LBWH(0, SCREEN_HEIGHT + self.background_scroll,
                                                   SCREEN_WIDTH, SCREEN_HEIGHT))
+
         for e in self.emitters:
             e.draw()
         self.platforms.draw(pixelated=True)
@@ -110,15 +122,18 @@ class GameView(arcade.View):
             move = MOVE_SPEED
         self.player.change_x = move
         self.player_list.update()
+
         self.background_scroll += self.player.scroll // 2
         if self.background_scroll <= -SCREEN_HEIGHT:
             self.background_scroll = 0
-        for platform in self.platforms:
-            platform.change_y = self.player.scroll
+
         self.score -= self.player.scroll
         new_score = int(self.score)
         self.score_manager.update_score(new_score)
         self.update_score_display()
+
+        for platform in self.platforms:
+            platform.change_y = self.player.scroll
         if self.delta_platforms_distance <= MAX_DELTA_PLATFORMS_DISTANCE:
             self.delta_platforms_distance = int(self.score // 200)
         if len(self.platforms) <= MAX_PLATFORMS:
@@ -136,6 +151,7 @@ class GameView(arcade.View):
             if self.score > MOVING_PLATFORMS_SCORE_THRESHOLD:
                 self.moving_platforms_amount = int(self.score) // (SCREEN_HEIGHT * 2)
         self.platforms.update()
+
         if len(self.enemies) == 0 and self.score > ENEMIES_SPAWN_SCORE_THRESHOLD:
             self.enemies.append(EnemyBird(SCREEN_HEIGHT * 2 + random.choice((-1, 1)) * random.randint(100, 1200)))
             self.enemies.append(EnemyBat(SCREEN_HEIGHT * 1.7 + random.choice((-1, 1)) * random.randint(100, 900)))
@@ -148,13 +164,16 @@ class GameView(arcade.View):
                 self.emitters.append(make_explosion(enemy.center_x, enemy.center_y))
                 self.emitters.append(make_explosion(enemy.center_x, enemy.center_y))
                 enemy.kill()
+
         emitters_copy = self.emitters.copy()
         for e in emitters_copy:
             e.update(delta_time)
         for e in emitters_copy:
             if e.can_reap():
                 self.emitters.remove(e)
+
         self.engine.update(sound_manager=self.sound_manager)
+
         if self.player.is_dead:
             game_over_view = GameOverView(self.score_manager, self.sound_manager)
             self.window.show_view(game_over_view)
@@ -164,20 +183,12 @@ class GameView(arcade.View):
             self.left = True
         elif key in (arcade.key.RIGHT, arcade.key.D):
             self.right = True
-        elif key in (arcade.key.UP, arcade.key.W):
-            self.up = True
-        elif key in (arcade.key.DOWN, arcade.key.S):
-            self.down = True
 
     def on_key_release(self, key, modifiers):
         if key in (arcade.key.LEFT, arcade.key.A):
             self.left = False
         elif key in (arcade.key.RIGHT, arcade.key.D):
             self.right = False
-        elif key in (arcade.key.UP, arcade.key.W):
-            self.up = False
-        elif key in (arcade.key.DOWN, arcade.key.S):
-            self.down = False
     
     def create_score_display(self):
         self.score_text = arcade.Text(

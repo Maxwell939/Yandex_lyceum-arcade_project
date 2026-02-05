@@ -17,11 +17,13 @@ class StartView(arcade.View):
     def __init__(self, game_view):
         super().__init__()
         arcade.set_background_color(arcade.color.BLACK)
+
         self.game_view = game_view
         self.start_text = None
         self.any_key_text1 = None
         self.any_key_text2 = None
         self.batch = None
+
         font_path = os.path.join(BASE_PATH, "fonts", "PressStart2P-Regular.ttf")
         arcade.load_font(font_path)
 

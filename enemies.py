@@ -33,6 +33,7 @@ class Enemy(arcade.Sprite):
             else:
                 player.is_dead = True
                 self.sound_manager.play_death_from_monster()
+
         if self.top < 0:
             self.kill()
 
@@ -43,10 +44,12 @@ class EnemyBat(Enemy):
         for i in range(1, 8):
             bat_path = os.path.join(BASE_PATH, "textures", "bat", f"bat{i}.png")
             self.textures.append(arcade.load_texture(bat_path))
+
         self.cur_texture_index = 0
         self.texture = self.textures[self.cur_texture_index]
         self.texture_change_time = 0
         self.texture_change_delay = 0.05
+
         self.scale = ENEMY_SCALE
         self.left = random.randint(SCREEN_WIDTH // 10, SCREEN_WIDTH - int(self.width) - SCREEN_WIDTH // 10)
 

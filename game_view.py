@@ -16,6 +16,7 @@ from score_manager import ScoreManager
 from game_over_view import GameOverView
 from sound_manager import SoundManager
 
+
 def get_base_path():
     if getattr(sys, 'frozen', False):
         return sys._MEIPASS
@@ -41,6 +42,7 @@ def make_explosion(x, y, count=80):
             mutation_callback=gravity_drag,
         ),
     )
+
 
 class GameView(arcade.View):
     def __init__(self):

@@ -4,12 +4,14 @@ import arcade
 from constants import SCREEN_WIDTH, SCROLL_THRESHOLD, PLAYER_SCALE
 from sound_manager import SoundManager
 
+
 def get_base_path():
     if getattr(sys, 'frozen', False):
         return sys._MEIPASS
     return os.path.dirname(os.path.abspath(__file__))
 
 BASE_PATH = get_base_path()
+
 
 class Player(arcade.Sprite):
     def __init__(self, x, y):

@@ -20,6 +20,7 @@ class OneWayPlatformPhysicsEngine(arcade.PhysicsEnginePlatformer):
                 self.jump(JUMP_SPEED)
                 if sound_manager:
                     sound_manager.play_jump()
+
             if platform.change_x != 0 or platform.change_y != 0:
                 if (platform.boundary_left is not None
                         and platform.left <= platform.boundary_left):

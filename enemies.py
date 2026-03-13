@@ -3,7 +3,7 @@ import os
 import sys
 import arcade
 
-from constants import RIGHT_FACING, LEFT_FACING, SCREEN_WIDTH, ENEMY_BIRD_SPEED, ENEMY_SCALE
+from constants import RIGHT_FACING, LEFT_FACING, SCREEN_WIDTH, ENEMY_BIRD_SPEED, ENEMY_SCALE, JUMP_SPEED
 from sound_manager import SoundManager
 
 
@@ -30,6 +30,7 @@ class Enemy(arcade.Sprite):
                     and player.change_y < 0):
                 self.make_explosion = True
                 self.sound_manager.play_monster_death()
+                player.change_y = JUMP_SPEED
             else:
                 player.is_dead = True
                 self.sound_manager.play_death_from_monster()

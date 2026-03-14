@@ -5,6 +5,7 @@ import arcade
 
 from constants import RIGHT_FACING, LEFT_FACING, SCREEN_WIDTH, ENEMY_BIRD_SPEED, ENEMY_SCALE, JUMP_SPEED
 from sound_manager import SoundManager
+from boosts import Boost
 
 
 def get_base_path():
@@ -31,6 +32,8 @@ class Enemy(arcade.Sprite):
                 self.make_explosion = True
                 self.sound_manager.play_monster_death()
                 player.change_y = JUMP_SPEED
+            elif getattr(player, 'boost_active', False):
+                pass
             else:
                 player.is_dead = True
                 self.sound_manager.play_death_from_monster()

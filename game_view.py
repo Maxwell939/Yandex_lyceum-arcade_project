@@ -10,6 +10,7 @@ from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED, MAX_PLAT
 
 from enemies import EnemyBird, EnemyBat
 from physics_engine import OneWayPlatformPhysicsEngine
+from boosts import Spring
 from platforms import Platform, MovingPlatform
 from player import Player
 from score_manager import ScoreManager
@@ -56,6 +57,7 @@ class GameView(arcade.View):
         self.delta_platforms_distance = 0
         self.moving_platforms_amount = 0
 
+        self.spring = arcade.SpriteList()
         self.enemies = arcade.SpriteList()
 
         self.player = None
@@ -80,10 +82,13 @@ class GameView(arcade.View):
     def setup(self):
         self.player = Player(*self.spawn_point)
         self.player_list.append(self.player)
-
+        self.platforms = arcade.SpriteList()
+        self.spring = arcade.SpriteList()
         self.platform = Platform()
         self.platform.position = [SCREEN_WIDTH // 2, 50]
         self.platforms.append(self.platform)
+        if self.platform.boost:
+            self.spring.append(self.platform.boost)
 
         self.engine = OneWayPlatformPhysicsEngine(
             player_sprite=self.player,
@@ -109,6 +114,7 @@ class GameView(arcade.View):
         for e in self.emitters:
             e.draw()
         self.platforms.draw(pixelated=True)
+        self.spring.draw(pixelated=True)
         self.enemies.draw(pixelated=True)
         self.player_list.draw(pixelated=True)
         arcade.draw_lrbt_rectangle_filled(0, SCREEN_WIDTH, SCREEN_HEIGHT - 35, SCREEN_HEIGHT, (0, 0, 0, 120))
@@ -148,9 +154,13 @@ class GameView(arcade.View):
                 else:
                     platform = Platform(platform_y)
                 self.platforms.append(platform)
+                if platform.boost:
+                    self.spring.append(platform.boost)
             if self.score > MOVING_PLATFORMS_SCORE_THRESHOLD:
                 self.moving_platforms_amount = int(self.score) // (SCREEN_HEIGHT * 2)
         self.platforms.update()
+        for boost in list(self.spring):
+            boost.update(self.player, delta_time)
 
         if len(self.enemies) == 0 and self.score > ENEMIES_SPAWN_SCORE_THRESHOLD:
             self.enemies.append(EnemyBird(SCREEN_HEIGHT * 2 + random.choice((-1, 1)) * random.randint(100, 1200)))
@@ -173,7 +183,6 @@ class GameView(arcade.View):
                 self.emitters.remove(e)
 
         self.engine.update(sound_manager=self.sound_manager)
-
         if self.player.is_dead:
             game_over_view = GameOverView(self.score_manager, self.sound_manager)
             self.window.show_view(game_over_view)

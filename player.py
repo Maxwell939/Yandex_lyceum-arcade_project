@@ -32,6 +32,8 @@ class Player(arcade.Sprite):
         self.is_dead = False
 
         self.scroll = 0
+        self.boost_active = False
+        self.boost_timer = 0
 
     def update(self, delta_time: float = 1 / 60) -> None:
         super().update(delta_time)
@@ -63,3 +65,6 @@ class Player(arcade.Sprite):
             above_threshold = self.top - SCROLL_THRESHOLD
             self.top = SCROLL_THRESHOLD
             self.scroll = -above_threshold
+
+        if self.boost_active and self.change_y < 0:
+            self.boost_active = False

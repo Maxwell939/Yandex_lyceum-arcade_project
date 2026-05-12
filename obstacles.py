@@ -31,7 +31,3 @@ class SpikeCluster(arcade.Sprite):
         self.center_x = x
         self.bottom = y
         self.is_obstacle = True
-
-    def update(self, delta_time: float = 1 / 60, *args, **kwargs) -> None:
-        if self.right < 0:
-            self.kill()

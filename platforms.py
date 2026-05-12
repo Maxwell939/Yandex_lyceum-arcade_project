@@ -18,7 +18,7 @@ BASE_PATH = get_base_path()
 
 
 class Platform(arcade.Sprite):
-    def __init__(self, y = 50):
+    def __init__(self, y=50):
         super().__init__()
         platform_path = os.path.join(BASE_PATH, "textures", "platforms", "platform.png")
         self.texture = arcade.load_texture(platform_path)
@@ -67,7 +67,7 @@ class MovingPlatform(Platform):
 
 
 class PlatformHorizontal(arcade.Sprite):
-    def __init__(self, x = 3, y = 0, scale_x: float = 1.0):
+    def __init__(self, x=3, y=0, scale_x: float = 1.0):
         super().__init__()
         platform_path = os.path.join(BASE_PATH, "textures", "platforms", "brown_grass.png")
         self.texture = arcade.load_texture(platform_path)
@@ -81,7 +81,7 @@ class PlatformHorizontal(arcade.Sprite):
 
 
 class GroundPlatform(Platform):
-    def __init__(self, x = 3, y = 0):
+    def __init__(self, x=3, y=0):
         super().__init__()
         platform_path = os.path.join(BASE_PATH, "textures", "platforms", "ground_brown_grass.png")
         self.texture = arcade.load_texture(platform_path)

@@ -16,7 +16,7 @@ BASE_PATH = get_base_path()
 
 
 class GameOverView(arcade.View):
-    def __init__(self, score_manager, sound_manager):
+    def __init__(self, score_manager):
         super().__init__()
         self.score_manager = score_manager
 

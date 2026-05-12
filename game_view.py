@@ -329,19 +329,19 @@ class GameViewHorizontal(arcade.View):
 
         for platform in list(self.platforms):
             if platform.right < 0:
-                platform.remove_from_sprite_lists()
+                platform.kill()
 
         # Maintain continuous ground (keep 3 ground platforms ahead)
         ground_platforms = [p for p in self.platforms if p.bottom == 0]
         if len(ground_platforms) < self.platforms_needed:
             # Find the rightmost ground platform
-            last_ground = max(ground_platforms, key=lambda p: p.left) if ground_platforms else None
+            last_ground = max([p.left for p in ground_platforms])
 
             if last_ground:
                 # Place next ground platform exactly where the last one ends
                 # Ground texture is 44 pixels wide with scale 1.0
                 ground_width = 44
-                new_ground_x = last_ground.left + ground_width
+                new_ground_x = last_ground + ground_width
             else:
                 new_ground_x = 200
 

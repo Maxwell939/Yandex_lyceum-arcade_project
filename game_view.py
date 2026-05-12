@@ -110,7 +110,7 @@ class GameView(arcade.View):
 
         self.emitters = []
 
-        if not hasattr(self, 'score_manager') or self.score_manager is None:
+        if not hasattr(self, "score_manager") or self.score_manager is None:
             self.score_manager = ScoreManager(self.score)
 
         self.score = self.score_manager.current_score
@@ -275,10 +275,8 @@ class GameViewHorizontal(arcade.View):
 
         self.platforms = arcade.SpriteList()
 
-        # Create initial continuous ground (cover screen width + buffer)
-        # Ground texture is 44 pixels wide
         ground_texture_width = 44
-        self.platforms_needed = (HORIZONTAL_SCREEN_WIDTH // ground_texture_width) + 3  # +3 for buffer
+        self.platforms_needed = (HORIZONTAL_SCREEN_WIDTH // ground_texture_width) + 3
 
         for i in range(self.platforms_needed):
             platform = GroundPlatform(i * ground_texture_width + ground_texture_width, 0)
@@ -297,10 +295,9 @@ class GameViewHorizontal(arcade.View):
         )
         self.engine.enable_multi_jump(2)
 
-        # Spike management
-        self.spike_positions = []  # Track spike x positions to avoid overlap
-        self.last_spike_score = 0  # Track when we last generated spikes
-        self.spike_cluster_spacing = 100  # Minimum distance between spike clusters
+        self.spike_positions = []
+        self.last_spike_score = 0
+        self.spike_cluster_spacing = 100
 
         self.create_score_display()
 
@@ -343,43 +340,31 @@ class GameViewHorizontal(arcade.View):
             if platform.right < 0:
                 platform.kill()
 
-        # Maintain continuous ground (keep 3 ground platforms ahead)
         ground_platforms = [p for p in self.platforms if p.bottom == 0]
         if len(ground_platforms) < self.platforms_needed:
-            # Find the rightmost ground platform
             last_ground = max([p.left for p in ground_platforms])
-
             if last_ground:
-                # Place next ground platform exactly where the last one ends
-                # Ground texture is 44 pixels wide with scale 1.0
                 ground_width = 44
                 new_ground_x = last_ground + ground_width
             else:
                 new_ground_x = 200
-
-            # Ground platform with consistent scale
             ground_platform = GroundPlatform(new_ground_x, 0)
             self.platforms.append(ground_platform)
 
-        # Generate spike clusters on ground platforms
-        if self.score - self.last_spike_score > random.randint(400, 800):  # Random interval between generations
-            if random.random() < random.uniform(0.1, 0.3):  # Random chance between 20% and 50%
-                # Find the rightmost ground platform
+        if self.score - self.last_spike_score > random.randint(400, 800):
+            if random.random() < random.uniform(0.1, 0.3):
                 ground_platforms = [p for p in self.platforms if isinstance(p, GroundPlatform)]
                 if ground_platforms:
-                    # Get the ground platform that's farthest to the right
                     rightmost_platform = max(ground_platforms, key=lambda p: p.center_x)
 
-                    # Find the rightmost spike position (if any exist)
                     rightmost_spike_x = max(self.spike_positions) if self.spike_positions else 0
 
                     cluster_size = random.randint(8, 16)
-                    # Generate spikes with random spacing from last cluster
                     safe_start_x = max(rightmost_platform.center_x, rightmost_spike_x) + cluster_size * 16
                     spawn_x = safe_start_x + random.randint(0, 300)
-                    spike_y = rightmost_platform.top  # Ground level
+                    spike_y = rightmost_platform.top
 
-                    start_x = spawn_x - (cluster_size - 1) * 8 * SPIKE_SCALE  # Center the cluster
+                    start_x = spawn_x - (cluster_size - 1) * 8 * SPIKE_SCALE
 
                     for i in range(cluster_size):
                         spike = SpikeCluster(start_x + i * 16 * SPIKE_SCALE, spike_y)
@@ -388,9 +373,8 @@ class GameViewHorizontal(arcade.View):
 
                     self.last_spike_score = self.score
 
-        # Generate levitating platforms and obstacles
         levitating_platforms = [p for p in self.platforms if p.bottom > 0 and not getattr(p, "is_obstacle", False)]
-        if len(levitating_platforms) < 10:  # Limit levitating platforms
+        if len(levitating_platforms) < 10:
             last_levitating = max(levitating_platforms, key=lambda p: p.center_x) if levitating_platforms else None
 
             if last_levitating:
@@ -405,23 +389,17 @@ class GameViewHorizontal(arcade.View):
             self.platforms.append(levitating_platform)
 
         if self.score - self.last_bee_score > self.bee_spawn_interval:
-            if random.random() < 0.4:  # 40% chance to spawn a bee
-                # Spawn bee from the right side of the screen
+            if random.random() < 0.4:
                 spawn_x = HORIZONTAL_SCREEN_WIDTH + random.randint(50, 200)
-                # Random y position, not too close to top or bottom
                 spawn_y = random.randint(100, HORIZONTAL_SCREEN_HEIGHT - 100)
-
                 bee = EnemyBee(spawn_x, spawn_y)
                 self.bees.append(bee)
-
                 self.last_bee_score = self.score
-                self.bee_spawn_interval = random.randint(300, 600)  # Reset with new random interval
-
-            # Update bees
+                self.bee_spawn_interval = random.randint(300, 600)
+    
         self.bees.update(self.player, delta_time)
         self.bees.update_animation(delta_time)
 
-        # Handle bee deaths (explosions)
         for bee in self.bees:
             if bee.make_explosion:
                 self.emitters.append(make_explosion(bee.center_x, bee.center_y))

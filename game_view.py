@@ -204,7 +204,7 @@ class GameView(arcade.View):
         self.engine.update(sound_manager=self.sound_manager)
 
         if self.player.is_dead:
-            game_over_view = GameOverView(self.score_manager, self.sound_manager)
+            game_over_view = GameOverView(self.score_manager)
             self.window.show_view(game_over_view)
 
         score_since_last_transition = self.score - self.score_on_last_transition
@@ -255,6 +255,8 @@ class GameViewHorizontal(arcade.View):
         self.spawn_point = (100, 120)
 
         self.engine = None
+
+        self.sound_manager = SoundManager()
 
         self.world_speed = WORLD_SPEED
         self.background_speed = 3
@@ -443,6 +445,7 @@ class GameViewHorizontal(arcade.View):
             if getattr(sprite, "is_obstacle", False):
                 if arcade.check_for_collision(self.player, sprite):
                     self.player.is_dead = True
+                    self.sound_manager.play_death_from_monster()
                     break
 
         score_since_last_transition = self.score - self.score_on_last_transition
@@ -456,7 +459,7 @@ class GameViewHorizontal(arcade.View):
 
         self.engine.update()
         if self.player.is_dead:
-            game_over_view = GameOverView(self.score_manager, SoundManager())
+            game_over_view = GameOverView(self.score_manager)
             self.window.show_view(game_over_view)
             self.window.set_size(SCREEN_WIDTH, SCREEN_HEIGHT)
 

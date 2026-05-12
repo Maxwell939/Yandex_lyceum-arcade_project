@@ -7,7 +7,7 @@ from arcade.particles import Emitter, EmitBurst, FadeParticle
 from pyglet.graphics import Batch
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED, MAX_PLATFORMS, JUMP_SPEED, \
     MAX_DELTA_PLATFORMS_DISTANCE, ENEMIES_SPAWN_SCORE_THRESHOLD, MOVING_PLATFORMS_SCORE_THRESHOLD, SPARK_TEXTURES, \
-    HORIZONTAL_SCREEN_WIDTH, HORIZONTAL_SCREEN_HEIGHT, HORIZONTAL_MOVE_SPEED
+    HORIZONTAL_SCREEN_WIDTH, HORIZONTAL_SCREEN_HEIGHT, HORIZONTAL_MOVE_SPEED, SPIKE_SCALE
 from enemies import EnemyBird, EnemyBat
 from physics_engine import OneWayPlatformPhysicsEngine
 from platforms import Platform, MovingPlatform, PlatformHorizontal, GroundPlatform
@@ -15,7 +15,7 @@ from player import Player, PlayerHorizontal
 from score_manager import ScoreManager
 from game_over_view import GameOverView
 from sound_manager import SoundManager
-from obstacles import Tree
+from obstacles import Tree, SpikeCluster
 
 
 def get_base_path():
@@ -169,7 +169,7 @@ class GameView(arcade.View):
         for boost in list(self.spring):
             boost.update(self.player, delta_time)
             if hasattr(boost, "update_animation"):
-                boost.update_animation(delta_time) 
+                boost.update_animation(delta_time)
 
         if len(self.enemies) == 0 and self.score > ENEMIES_SPAWN_SCORE_THRESHOLD:
             self.enemies.append(EnemyBird(SCREEN_HEIGHT * 2 + random.choice((-1, 1)) * random.randint(100, 1200)))
@@ -278,6 +278,11 @@ class GameViewHorizontal(arcade.View):
         )
         self.engine.enable_multi_jump(2)
 
+        # Spike management
+        self.spike_positions = []  # Track spike x positions to avoid overlap
+        self.last_spike_score = 0  # Track when we last generated spikes
+        self.spike_cluster_spacing = 100  # Minimum distance between spike clusters
+
         self.create_score_display()
 
     def on_draw(self):
@@ -333,6 +338,34 @@ class GameViewHorizontal(arcade.View):
             # Ground platform with consistent scale
             ground_platform = GroundPlatform(new_ground_x, 0)
             self.platforms.append(ground_platform)
+
+        # Generate spike clusters on ground platforms
+        if self.score - self.last_spike_score > random.randint(400, 800):  # Random interval between generations
+            if random.random() < random.uniform(0.1, 0.3):  # Random chance between 20% and 50%
+                # Find the rightmost ground platform
+                ground_platforms = [p for p in self.platforms if isinstance(p, GroundPlatform)]
+                if ground_platforms:
+                    # Get the ground platform that's farthest to the right
+                    rightmost_platform = max(ground_platforms, key=lambda p: p.center_x)
+
+                    # Find the rightmost spike position (if any exist)
+                    rightmost_spike_x = max(self.spike_positions) if self.spike_positions else 0
+
+                    # Generate spikes with random spacing from last cluster
+                    safe_start_x = max(rightmost_platform.center_x, rightmost_spike_x) + random.randint(80, 250)
+                    spawn_x = safe_start_x + random.randint(0, 300)
+                    spike_y = rightmost_platform.top  # Ground level
+
+                    # Create spike cluster with 4-8 spikes
+                    cluster_size = random.randint(4, 16)
+                    start_x = spawn_x - (cluster_size - 1) * 8 * SPIKE_SCALE  # Center the cluster
+
+                    for i in range(cluster_size):
+                        spike = SpikeCluster(start_x + i * 16 * SPIKE_SCALE, spike_y)
+                        self.platforms.append(spike)
+                        self.spike_positions.append(spike.center_x)
+
+                    self.last_spike_score = self.score
 
         # Generate levitating platforms and obstacles
         levitating_platforms = [p for p in self.platforms if p.bottom > 0 and not getattr(p, "is_obstacle", False)]

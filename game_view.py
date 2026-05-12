@@ -8,7 +8,7 @@ from pyglet.graphics import Batch
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED, MAX_PLATFORMS, JUMP_SPEED, \
     MAX_DELTA_PLATFORMS_DISTANCE, ENEMIES_SPAWN_SCORE_THRESHOLD, MOVING_PLATFORMS_SCORE_THRESHOLD, SPARK_TEXTURES, \
     HORIZONTAL_SCREEN_WIDTH, HORIZONTAL_SCREEN_HEIGHT, HORIZONTAL_MOVE_SPEED, SPIKE_SCALE, WORLD_SPEED, \
-    HORIZONTAL_JUMP_SPEED
+    HORIZONTAL_JUMP_SPEED, SWITCH_THRESHOLD, SWITCH_CHANCE
 from enemies import EnemyBird, EnemyBat, EnemyBee
 from physics_engine import OneWayPlatformPhysicsEngine
 from platforms import Platform, MovingPlatform, PlatformHorizontal, GroundPlatform
@@ -76,7 +76,6 @@ class GameView(arcade.View):
 
         self.emitters = None
 
-
         self.sound_manager = SoundManager()
 
         self.batch = Batch()
@@ -87,23 +86,8 @@ class GameView(arcade.View):
 
         self.horizontal_world = False
         self.old_score = 0
-        self.ranges = [
-            {
-                'min': 1000,
-                'max': 5000,
-                'chance': 1 / 25
-            },
-            {
-                'min': 5000,
-                'max': 10000,
-                'chance': 1 / 5
-            },
-            {
-                'min': 10000,
-                'max': 25000,
-                'chance': 2 / 3
-            }
-        ]
+        self.score_on_last_transition = score
+        self.from_horizontal = from_horizontal
         self.score_on_last_transition = score
         self.from_horizontal = from_horizontal
 
@@ -130,13 +114,9 @@ class GameView(arcade.View):
         if not hasattr(self, 'score_manager') or self.score_manager is None:
             self.score_manager = ScoreManager(self.score)
 
-
         self.score = self.score_manager.current_score
 
         self.create_score_display()
-
-
-
 
     def on_draw(self):
         self.clear()
@@ -224,29 +204,18 @@ class GameView(arcade.View):
         self.engine.update(sound_manager=self.sound_manager)
 
         if self.player.is_dead:
-            game_over_view = GameOverView(self.score_manager, self.sound_manager)
+            game_over_view = GameOverView(self.score_manager)
             self.window.show_view(game_over_view)
 
-        for r in self.ranges:
-            if r['min'] < self.score - self.score_on_last_transition < r['max'] and self.score - self.old_score > 700:
-                if random.random() < r['chance']:
-                    self.horizontal_world = True
-                    horizontal_view = GameViewHorizontal(self.score_manager)
-                    horizontal_view.return_from_vertical = True
-                    horizontal_view.setup()
-                    self.window.show_view(horizontal_view)
-                    self.window.set_size(HORIZONTAL_SCREEN_WIDTH, HORIZONTAL_SCREEN_HEIGHT)
-                else:
-                    self.old_score = self.score
-                break
-        if self.score - self.score_on_last_transition > 25000 and not self.horizontal_world and self.score - self.old_score > 700:
-            self.horizontal_world = True
-            horizontal_view = GameViewHorizontal(self.score_manager)
-            horizontal_view.setup()
-            self.window.show_view(horizontal_view)
-            self.window.set_size(HORIZONTAL_SCREEN_WIDTH, HORIZONTAL_SCREEN_HEIGHT)
-
-
+        score_since_last_transition = self.score - self.score_on_last_transition
+        if score_since_last_transition >= SWITCH_THRESHOLD:
+            if random.random() < SWITCH_CHANCE:
+                self.horizontal_world = True
+                horizontal_view = GameViewHorizontal(self.score_manager)
+                horizontal_view.score_on_last_transition = self.score
+                horizontal_view.setup()
+                self.window.show_view(horizontal_view)
+                self.window.set_size(HORIZONTAL_SCREEN_WIDTH, HORIZONTAL_SCREEN_HEIGHT)
 
     def on_key_press(self, key, modifiers):
         if key in (arcade.key.LEFT, arcade.key.A):
@@ -287,6 +256,8 @@ class GameViewHorizontal(arcade.View):
 
         self.engine = None
 
+        self.sound_manager = SoundManager()
+
         self.world_speed = WORLD_SPEED
         self.background_speed = 3
         self.background_scroll = 0
@@ -297,30 +268,12 @@ class GameViewHorizontal(arcade.View):
         self.score_text = None
         self.score_manager = score_manager
         self.score = self.score_manager.current_score
+        self.score_on_last_transition = self.score
         self.old_score = 0
 
         self.last_tree_score = self.score
         self.first_tree = True
         self.score_start = self.score
-
-        self.score_on_last_transition = self.score
-        self.ranges = [
-            {
-                'min': 1000,
-                'max': 5000,
-                'chance': 1 / 25
-            },
-            {
-                'min': 5000,
-                'max': 10000,
-                'chance': 1 / 15
-            },
-            {
-                'min': 10000,
-                'max': 25000,
-                'chance': 1 / 5
-            }
-        ]
 
     def setup(self):
         self.player = PlayerHorizontal(*self.spawn_point)
@@ -457,24 +410,6 @@ class GameViewHorizontal(arcade.View):
             levitating_platform = PlatformHorizontal(new_x, levitating_height, levitating_scale)
             self.platforms.append(levitating_platform)
 
-            # # Obstacles on levitating platforms
-            # if self.score - self.last_tree_score > 400 and self.score < 3000:
-            #     if random.random() < 0.05:
-            #         stick = Tree()
-            #         stick.center_x = levitating_platform.center_x
-            #         stick.bottom = levitating_platform.top
-            #         stick.is_obstacle = True
-            #         self.platforms.append(stick)
-            #         self.last_tree_score = self.score
-            # elif self.score >= 3000:
-            #     if random.random() < 0.08:
-            #         stick = Tree()
-            #         stick.center_x = levitating_platform.center_x
-            #         stick.bottom = levitating_platform.top
-            #         stick.is_obstacle = True
-            #         self.platforms.append(stick)
-            #         self.last_tree_score = self.score
-
         if self.score - self.last_bee_score > self.bee_spawn_interval:
             if random.random() < 0.4:  # 40% chance to spawn a bee
                 # Spawn bee from the right side of the screen
@@ -510,21 +445,21 @@ class GameViewHorizontal(arcade.View):
             if getattr(sprite, "is_obstacle", False):
                 if arcade.check_for_collision(self.player, sprite):
                     self.player.is_dead = True
+                    self.sound_manager.play_death_from_monster()
                     break
-        for r in self.ranges:
-            if r['min'] < self.score - self.score_on_last_transition < r['max'] and self.score - self.old_score > 300:
-                if random.random() < r['chance']:
-                    vertical_view = GameView(self.score, from_horizontal=True)
-                    vertical_view.setup()
-                    self.window.show_view(vertical_view)
-                    self.window.set_size(SCREEN_WIDTH, SCREEN_HEIGHT)
-                else:
-                    self.old_score = self.score
-                break
+
+        score_since_last_transition = self.score - self.score_on_last_transition
+        if score_since_last_transition >= SWITCH_THRESHOLD:
+            if random.random() < SWITCH_CHANCE:
+                vertical_view = GameView(self.score, from_horizontal=True)
+                vertical_view.score_on_last_transition = self.score
+                vertical_view.setup()
+                self.window.show_view(vertical_view)
+                self.window.set_size(SCREEN_WIDTH, SCREEN_HEIGHT)
 
         self.engine.update()
         if self.player.is_dead:
-            game_over_view = GameOverView(self.score_manager, SoundManager())
+            game_over_view = GameOverView(self.score_manager)
             self.window.show_view(game_over_view)
             self.window.set_size(SCREEN_WIDTH, SCREEN_HEIGHT)
 

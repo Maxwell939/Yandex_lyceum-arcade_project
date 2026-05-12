@@ -46,7 +46,7 @@ class SoundManager:
 
     def play_death_from_monster(self):
         if self.death_from_monster_sound:
-            arcade.play_sound(self.death_from_monster_sound, volume=0.2)
+            arcade.play_sound(self.death_from_monster_sound, volume=0.05)
 
     def play_monster_death(self):
         if self.monster_death_sound:

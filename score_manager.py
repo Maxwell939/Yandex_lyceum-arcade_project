@@ -3,8 +3,8 @@ import sys
 
 
 class ScoreManager:
-    def __init__(self):
-        self.current_score = 0
+    def __init__(self, current_score: int = 0):
+        self.current_score = current_score
         self.high_score = 0
 
         if getattr(sys, 'frozen', False):

@@ -19,12 +19,13 @@ class GameOverView(arcade.View):
     def __init__(self, score_manager):
         super().__init__()
         self.score_manager = score_manager
-
+        bg_path = os.path.join(BASE_PATH, "textures", "backgrounds", "yellow_menu_bg.png")
         self.batch = Batch()
         self.game_over_text = None
         self.score_text = None
         self.high_score_text = None
         self.instruction_text = None
+        self.background = arcade.load_texture(bg_path)
         font_path = os.path.join(BASE_PATH, "fonts", "PressStart2P-Regular.ttf")
         arcade.load_font(font_path)
         self.create_text_elements()
@@ -44,7 +45,7 @@ class GameOverView(arcade.View):
             " Ваш результат:",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT * 0.6,
-            arcade.color.WHITE,
+            arcade.color.BLACK,
             20,
             font_name="Press Start 2P",
             anchor_x="center",
@@ -54,7 +55,7 @@ class GameOverView(arcade.View):
             f"{self.score_manager.current_score}",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT * 0.55,
-            arcade.color.WHITE,
+            arcade.color.BLACK,
             20,
             font_name="Press Start 2P",
             anchor_x="center",
@@ -84,7 +85,7 @@ class GameOverView(arcade.View):
             "Нажмите ПРОБЕЛ",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT * 0.2,
-            arcade.color.GRAY,
+            arcade.color.AERO_BLUE,
             15,
             anchor_x="center",
             font_name="Press Start 2P",
@@ -94,7 +95,7 @@ class GameOverView(arcade.View):
             "чтобы начать заново",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT * 0.15,
-            arcade.color.GRAY,
+            arcade.color.AERO_BLUE,
             15,
             anchor_x="center",
             font_name="Press Start 2P",
@@ -103,7 +104,8 @@ class GameOverView(arcade.View):
 
     def on_draw(self):
         self.clear()
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.draw_texture_rect(self.background,
+                                 arcade.rect.LBWH(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
         self.batch.draw()
 
     def on_key_press(self, key, modifiers):

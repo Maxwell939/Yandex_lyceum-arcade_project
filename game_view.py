@@ -5,7 +5,7 @@ import arcade
 
 from arcade.particles import Emitter, EmitBurst, FadeParticle
 from pyglet.graphics import Batch
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED, MAX_PLATFORMS, JUMP_SPEED, \
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED, MAX_PLATFORMS, \
     MAX_DELTA_PLATFORMS_DISTANCE, ENEMIES_SPAWN_SCORE_THRESHOLD, MOVING_PLATFORMS_SCORE_THRESHOLD, SPARK_TEXTURES, \
     HORIZONTAL_SCREEN_WIDTH, HORIZONTAL_SCREEN_HEIGHT, HORIZONTAL_MOVE_SPEED, SPIKE_SCALE, WORLD_SPEED, \
     HORIZONTAL_JUMP_SPEED, SWITCH_THRESHOLD, SWITCH_CHANCE
@@ -16,7 +16,7 @@ from player import Player, PlayerHorizontal
 from score_manager import ScoreManager
 from game_over_view import GameOverView
 from sound_manager import SoundManager
-from obstacles import Tree, SpikeCluster
+from obstacles import SpikeCluster
 
 
 def get_base_path():
@@ -85,7 +85,6 @@ class GameView(arcade.View):
         self.score_manager = ScoreManager(self.score)
 
         self.horizontal_world = False
-        self.old_score = 0
         self.score_on_last_transition = score
         self.from_horizontal = from_horizontal
         self.score_on_last_transition = score
@@ -269,11 +268,6 @@ class GameViewHorizontal(arcade.View):
         self.score_manager = score_manager
         self.score = self.score_manager.current_score
         self.score_on_last_transition = self.score
-        self.old_score = 0
-
-        self.last_tree_score = self.score
-        self.first_tree = True
-        self.score_start = self.score
 
     def setup(self):
         self.player = PlayerHorizontal(*self.spawn_point)

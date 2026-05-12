@@ -14,14 +14,6 @@ def get_base_path():
 BASE_PATH = get_base_path()
 
 
-class Tree(arcade.Sprite):
-    def __init__(self):
-        super().__init__()
-        tree_path = os.path.join(BASE_PATH, "textures", "obstacles", "stick.png")
-        self.texture = arcade.load_texture(tree_path)
-        self.scale = 0.5
-
-
 class SpikeCluster(arcade.Sprite):
     def __init__(self, x, y):
         super().__init__()

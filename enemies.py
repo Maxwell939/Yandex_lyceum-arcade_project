@@ -3,7 +3,8 @@ import os
 import sys
 import arcade
 
-from constants import RIGHT_FACING, LEFT_FACING, SCREEN_WIDTH, ENEMY_BIRD_SPEED, ENEMY_SCALE, JUMP_SPEED
+from constants import RIGHT_FACING, LEFT_FACING, SCREEN_WIDTH, ENEMY_BIRD_SPEED, ENEMY_SCALE, JUMP_SPEED, \
+    HORIZONTAL_SCREEN_HEIGHT, WORLD_SPEED
 from sound_manager import SoundManager
 
 
@@ -102,3 +103,48 @@ class EnemyBird(Enemy):
                 self.texture = self.textures[self.cur_texture_index].flip_horizontally()
             else:
                 self.texture = self.textures[self.cur_texture_index]
+
+
+class EnemyBee(Enemy):
+    def __init__(self, x: float, y: float):
+        super().__init__(y)
+        for i in range(6):
+            bee_path = os.path.join(BASE_PATH, "textures", "bee", f"bee{i}.png")
+            if os.path.exists(bee_path):
+                self.textures.append(arcade.load_texture(bee_path))
+
+        self.cur_texture_index = 0
+        self.texture = self.textures[self.cur_texture_index]
+        self.texture_change_time = 0
+        self.texture_change_delay = 0.05
+
+        self.scale = 1.5
+        self.center_x = x
+        self.center_y = y
+
+        self.change_x = -WORLD_SPEED
+
+        self.vertical_speed = random.uniform(0.5, 1.5)
+        self.vertical_direction = random.choice([-1, 1])
+        self.min_y = 100
+        self.max_y = HORIZONTAL_SCREEN_HEIGHT - 100
+
+    def update(self, player: arcade.Sprite, delta_time: float = 1 / 60) -> None:
+        super().update(player=player, delta_time=delta_time)
+        self.center_y += self.vertical_speed * self.vertical_direction
+        if self.top >= self.max_y:
+            self.top = self.max_y
+            self.vertical_direction = -1
+        elif self.bottom <= self.min_y:
+            self.bottom = self.min_y
+            self.vertical_direction = 1
+
+        if self.right < 0:
+            self.kill()
+
+    def update_animation(self, delta_time: float = 1 / 60) -> None:
+        self.texture_change_time += delta_time
+        if self.texture_change_time >= self.texture_change_delay:
+            self.texture_change_time -= self.texture_change_delay
+            self.cur_texture_index = (self.cur_texture_index + 1) % len(self.textures)
+            self.texture = self.textures[self.cur_texture_index]

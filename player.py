@@ -71,24 +71,30 @@ class Player(arcade.Sprite):
             self.boost_active = False
 
 
-class PlayerHor(arcade.Sprite):
+class PlayerHorizontal(arcade.Sprite):
     def __init__(self, x, y):
         super().__init__()
 
-        for i in range(12):
-            self.textures.append(arcade.load_texture(os.path.join(BASE_PATH, "textures", "player", f"run{i}.png")))
+        self.run_textures = [arcade.load_texture(os.path.join(BASE_PATH, "textures", "player", f"run{i}.png"))
+                             for i in range(12)]
+        self.double_jump_textures = [
+            arcade.load_texture(os.path.join(BASE_PATH, "textures", "player", f"double_jump{i}.png")) for i in range(6)
+        ]
 
         self.center_x = x
         self.bottom = y
         self.scale = PLAYER_SCALE
         self.cur_texture_index = 0
-        self.texture = self.textures[self.cur_texture_index]
+        self.texture = self.run_textures[self.cur_texture_index]
         self.texture_change_time = 0
         self.texture_change_delay = 0.05
 
         self.is_dead = False
         self.boost_active = False
         self.change_x = RUN_SPEED
+
+        self.is_double_jumping = False
+        self.current_animation = "run"
 
     def update(self, delta_time: float = 1 / 60) -> None:
         super().update(delta_time)
@@ -100,9 +106,31 @@ class PlayerHor(arcade.Sprite):
         elif self.right >= HORIZONTAL_SCREEN_WIDTH:
             self.right = HORIZONTAL_SCREEN_WIDTH
 
+        if self.change_y > 0 and self.is_double_jumping:
+            self.current_animation = "double_jump"
+        elif self.change_y > 0:
+            self.current_animation = "jump"
+        elif self.change_y < 0:
+            self.current_animation = "jump"
+        else:
+            self.current_animation = "run"
+            self.is_double_jumping = False
+
+    def start_double_jump_animation(self):
+        self.is_double_jumping = True
+        self.cur_texture_index = 0
+        self.texture_change_time = 0
+
     def update_animation(self, delta_time: float = 1 / 60) -> None:
         self.texture_change_time += delta_time
         if self.texture_change_time >= self.texture_change_delay:
             self.texture_change_time -= self.texture_change_delay
-            self.cur_texture_index = (self.cur_texture_index + 1) % len(self.textures)
-            self.texture = self.textures[self.cur_texture_index]
+
+            if self.current_animation == "double_jump":
+                texture_list = self.double_jump_textures
+            else:
+                texture_list = self.run_textures
+
+            if texture_list:
+                self.cur_texture_index = (self.cur_texture_index + 1) % len(texture_list)
+                self.texture = texture_list[self.cur_texture_index]

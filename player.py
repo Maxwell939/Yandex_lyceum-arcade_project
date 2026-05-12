@@ -111,7 +111,7 @@ class PlayerHorizontal(arcade.Sprite):
         elif self.change_y > 0:
             self.current_animation = "jump"
         elif self.change_y < 0:
-            self.current_animation = "jump"  # Falling
+            self.current_animation = "jump"
         else:
             self.current_animation = "run"
             self.is_double_jumping = False

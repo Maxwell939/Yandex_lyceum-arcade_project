@@ -2,6 +2,8 @@ import arcade
 import sys
 import os
 
+from constants import SPIKE_SCALE
+
 
 def get_base_path():
     if getattr(sys, 'frozen', False):
@@ -18,3 +20,14 @@ class Tree(arcade.Sprite):
         tree_path = os.path.join(BASE_PATH, "textures", "obstacles", "stick.png")
         self.texture = arcade.load_texture(tree_path)
         self.scale = 0.5
+
+
+class SpikeCluster(arcade.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        spike_path = os.path.join(BASE_PATH, "textures", "obstacles", "spikes.png")
+        self.texture = arcade.load_texture(spike_path)
+        self.scale = SPIKE_SCALE
+        self.center_x = x
+        self.bottom = y
+        self.is_obstacle = True

@@ -7,15 +7,16 @@ from arcade.particles import Emitter, EmitBurst, FadeParticle
 from pyglet.graphics import Batch
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, GRAVITY, MOVE_SPEED, MAX_PLATFORMS, JUMP_SPEED, \
     MAX_DELTA_PLATFORMS_DISTANCE, ENEMIES_SPAWN_SCORE_THRESHOLD, MOVING_PLATFORMS_SCORE_THRESHOLD, SPARK_TEXTURES, \
-    HORIZONTAL_SCREEN_WIDTH, HORIZONTAL_SCREEN_HEIGHT, HORIZONTAL_MOVE_SPEED
-from enemies import EnemyBird, EnemyBat
+    HORIZONTAL_SCREEN_WIDTH, HORIZONTAL_SCREEN_HEIGHT, HORIZONTAL_MOVE_SPEED, SPIKE_SCALE, WORLD_SPEED, \
+    HORIZONTAL_JUMP_SPEED
+from enemies import EnemyBird, EnemyBat, EnemyBee
 from physics_engine import OneWayPlatformPhysicsEngine
 from platforms import Platform, MovingPlatform, PlatformHorizontal, GroundPlatform
 from player import Player, PlayerHorizontal
 from score_manager import ScoreManager
 from game_over_view import GameOverView
 from sound_manager import SoundManager
-from obstacles import Tree
+from obstacles import Tree, SpikeCluster
 
 
 def get_base_path():
@@ -169,7 +170,7 @@ class GameView(arcade.View):
         for boost in list(self.spring):
             boost.update(self.player, delta_time)
             if hasattr(boost, "update_animation"):
-                boost.update_animation(delta_time) 
+                boost.update_animation(delta_time)
 
         if len(self.enemies) == 0 and self.score > ENEMIES_SPAWN_SCORE_THRESHOLD:
             self.enemies.append(EnemyBird(SCREEN_HEIGHT * 2 + random.choice((-1, 1)) * random.randint(100, 1200)))
@@ -243,8 +244,8 @@ class GameViewHorizontal(arcade.View):
 
         self.engine = None
 
-        self.world_speed = 5  # Reduced from 5 for slower gameplay
-        self.background_speed = 3  # Reduced from 3
+        self.world_speed = WORLD_SPEED
+        self.background_speed = 3
         self.background_scroll = 0
 
         self.last_platform_x = 300
@@ -271,12 +272,23 @@ class GameViewHorizontal(arcade.View):
             platform = GroundPlatform(i * ground_texture_width + ground_texture_width, 0)
             self.platforms.append(platform)
 
+        self.bees = arcade.SpriteList()
+        self.last_bee_score = 0
+        self.bee_spawn_interval = random.randint(300, 600)
+
+        self.emitters = []
+
         self.engine = arcade.PhysicsEnginePlatformer(
             player_sprite=self.player,
             platforms=self.platforms,
             gravity_constant=GRAVITY
         )
         self.engine.enable_multi_jump(2)
+
+        # Spike management
+        self.spike_positions = []  # Track spike x positions to avoid overlap
+        self.last_spike_score = 0  # Track when we last generated spikes
+        self.spike_cluster_spacing = 100  # Minimum distance between spike clusters
 
         self.create_score_display()
 
@@ -288,7 +300,10 @@ class GameViewHorizontal(arcade.View):
         arcade.draw_texture_rect(self.background,
                                  arcade.rect.LBWH(-HORIZONTAL_SCREEN_WIDTH + self.background_scroll, 0,
                                                   HORIZONTAL_SCREEN_WIDTH, HORIZONTAL_SCREEN_HEIGHT), pixelated=True)
+        for e in self.emitters:
+            e.draw()
         self.platforms.draw(pixelated=True)
+        self.bees.draw(pixelated=True)
         self.player_list.draw(pixelated=True)
         self.batch.draw()
 
@@ -314,25 +329,52 @@ class GameViewHorizontal(arcade.View):
 
         for platform in list(self.platforms):
             if platform.right < 0:
-                platform.remove_from_sprite_lists()
+                platform.kill()
 
         # Maintain continuous ground (keep 3 ground platforms ahead)
         ground_platforms = [p for p in self.platforms if p.bottom == 0]
         if len(ground_platforms) < self.platforms_needed:
             # Find the rightmost ground platform
-            last_ground = max(ground_platforms, key=lambda p: p.left) if ground_platforms else None
+            last_ground = max([p.left for p in ground_platforms])
 
             if last_ground:
                 # Place next ground platform exactly where the last one ends
                 # Ground texture is 44 pixels wide with scale 1.0
                 ground_width = 44
-                new_ground_x = last_ground.left + ground_width
+                new_ground_x = last_ground + ground_width
             else:
                 new_ground_x = 200
 
             # Ground platform with consistent scale
             ground_platform = GroundPlatform(new_ground_x, 0)
             self.platforms.append(ground_platform)
+
+        # Generate spike clusters on ground platforms
+        if self.score - self.last_spike_score > random.randint(400, 800):  # Random interval between generations
+            if random.random() < random.uniform(0.1, 0.3):  # Random chance between 20% and 50%
+                # Find the rightmost ground platform
+                ground_platforms = [p for p in self.platforms if isinstance(p, GroundPlatform)]
+                if ground_platforms:
+                    # Get the ground platform that's farthest to the right
+                    rightmost_platform = max(ground_platforms, key=lambda p: p.center_x)
+
+                    # Find the rightmost spike position (if any exist)
+                    rightmost_spike_x = max(self.spike_positions) if self.spike_positions else 0
+
+                    cluster_size = random.randint(8, 16)
+                    # Generate spikes with random spacing from last cluster
+                    safe_start_x = max(rightmost_platform.center_x, rightmost_spike_x) + cluster_size * 16
+                    spawn_x = safe_start_x + random.randint(0, 300)
+                    spike_y = rightmost_platform.top  # Ground level
+
+                    start_x = spawn_x - (cluster_size - 1) * 8 * SPIKE_SCALE  # Center the cluster
+
+                    for i in range(cluster_size):
+                        spike = SpikeCluster(start_x + i * 16 * SPIKE_SCALE, spike_y)
+                        self.platforms.append(spike)
+                        self.spike_positions.append(spike.center_x)
+
+                    self.last_spike_score = self.score
 
         # Generate levitating platforms and obstacles
         levitating_platforms = [p for p in self.platforms if p.bottom > 0 and not getattr(p, "is_obstacle", False)]
@@ -368,6 +410,37 @@ class GameViewHorizontal(arcade.View):
             #         self.platforms.append(stick)
             #         self.last_tree_score = self.score
 
+        if self.score - self.last_bee_score > self.bee_spawn_interval:
+            if random.random() < 0.4:  # 40% chance to spawn a bee
+                # Spawn bee from the right side of the screen
+                spawn_x = HORIZONTAL_SCREEN_WIDTH + random.randint(50, 200)
+                # Random y position, not too close to top or bottom
+                spawn_y = random.randint(100, HORIZONTAL_SCREEN_HEIGHT - 100)
+
+                bee = EnemyBee(spawn_x, spawn_y)
+                self.bees.append(bee)
+
+                self.last_bee_score = self.score
+                self.bee_spawn_interval = random.randint(300, 600)  # Reset with new random interval
+
+            # Update bees
+        self.bees.update(self.player, delta_time)
+        self.bees.update_animation(delta_time)
+
+        # Handle bee deaths (explosions)
+        for bee in self.bees:
+            if bee.make_explosion:
+                self.emitters.append(make_explosion(bee.center_x, bee.center_y))
+                self.emitters.append(make_explosion(bee.center_x, bee.center_y))
+                bee.kill()
+
+        emitters_copy = self.emitters.copy()
+        for e in emitters_copy:
+            e.update(delta_time)
+        for e in emitters_copy:
+            if e.can_reap():
+                self.emitters.remove(e)
+
         for sprite in self.platforms:
             if getattr(sprite, "is_obstacle", False):
                 if arcade.check_for_collision(self.player, sprite):
@@ -385,7 +458,7 @@ class GameViewHorizontal(arcade.View):
             if self.engine.can_jump():
                 if self.engine.jumps_since_ground > 0:
                     self.player.start_double_jump_animation()
-                self.player.change_y = JUMP_SPEED
+                self.player.change_y = HORIZONTAL_JUMP_SPEED
                 self.engine.increment_jump_counter()
         elif key in (arcade.key.LEFT, arcade.key.A):
             self.left = True

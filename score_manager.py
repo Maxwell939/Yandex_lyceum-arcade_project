@@ -7,7 +7,7 @@ class ScoreManager:
         self.current_score = current_score
         self.high_score = 0
 
-        if getattr(sys, 'frozen', False):
+        if getattr(sys, "frozen", False):
             base_path = os.path.dirname(sys.executable)
         else:
             base_path = os.path.dirname(os.path.abspath(__file__))
@@ -21,7 +21,7 @@ class ScoreManager:
             os.makedirs(self.records_dir, exist_ok=True)
         if os.path.exists(self.score_file):
             try:
-                with open(self.score_file, 'r') as f:
+                with open(self.score_file, "r") as f:
                     content = f.read().strip()
                     if content.isdigit():
                         self.high_score = int(content)
@@ -29,11 +29,11 @@ class ScoreManager:
                 self.high_score = 0
         else:
             self.high_score = 0
-            with open(self.score_file, 'w') as f:
+            with open(self.score_file, "w") as f:
                 f.write("0")
 
     def save_high_score(self):
-        with open(self.score_file, 'w') as f:
+        with open(self.score_file, "w") as f:
             f.write(str(self.high_score))
 
     def update_score(self, new_score):

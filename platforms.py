@@ -9,7 +9,7 @@ from boosts import Spring
 
 
 def get_base_path():
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         return sys._MEIPASS
     return os.path.dirname(os.path.abspath(__file__))
 
@@ -28,7 +28,7 @@ class Platform(arcade.Sprite):
         self.boost = None
         self.down_boost = False
         if random.random() < BOOST_PROBABILITY:
-            if not hasattr(self, 'boost') or self.boost is None:
+            if not hasattr(self, "boost") or self.boost is None:
                 self.boost = Spring()
             self.boost.center_x = self.center_x
             self.boost.bottom = self.top

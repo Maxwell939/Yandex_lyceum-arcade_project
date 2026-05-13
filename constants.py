@@ -46,5 +46,5 @@ SPARK_TEXTURES: list[arcade.Texture] = [
     arcade.make_soft_circle_texture(8, arcade.color.DARK_TANGERINE)
 ]
 
-SWITCH_THRESHOLD = 1000
+SWITCH_THRESHOLD = 2000
 SWITCH_CHANCE: float = 0.001
